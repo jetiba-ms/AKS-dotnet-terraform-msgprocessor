@@ -56,11 +56,11 @@ stages:
               inlineScript: |
                 az aks get-credentials -n $(AKS_CLUSTER_NAME) -g $(AKS_CLUSTER_RG)
 
-                ehconnstring=`az eventhubs namespace authorization-rule keys list -n RootManageSharedAccessKey --namespace-name $(EH_NS_NAME) -g $(EH_NS_RG) | jq -r .primaryConnectionString`
-                stgconnstring=`az storage account show-connection-string -n $(STG_NAME) -g $(EH_NS_RG) | jq -r .connectionString`
+                ehconnstring=`az eventhubs namespace authorization-rule keys list -n RootManageSharedAccessKey --namespace-name $(EH_NS_NAME) -g $(AKS_CLUSTER_RG) | jq -r .primaryConnectionString`
+                stgconnstring=`az storage account show-connection-string -n $(STG_NAME) -g $(AKS_CLUSTER_RG) | jq -r .connectionString`
                 
                 helm upgrade msgprocessor charts/msgprocessor --install \
-                  --set image.repository=jetiba.azurecr.io/msgprocessor \
+                  --set image.repository=$(ACR_NAME).azurecr.io/msgprocessor \
                   --set image.tag=$(Build.BuildId) \
                   --set secrets.ehconnstring=$ehconnstring \
                   --set secrets.ehname=$(EH_NAME) \
